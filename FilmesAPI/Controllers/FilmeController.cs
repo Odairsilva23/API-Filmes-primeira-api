@@ -1,4 +1,6 @@
-﻿using FilmesAPI.Data;
+﻿using AutoMapper;
+using FilmesAPI.Data;
+using FilmesAPI.Dtos;
 using FilmesAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,15 +16,18 @@ namespace FilmesAPI.Controllers
     public class FilmeController : ControllerBase
     {
         private FilmeContext _context;
-        public FilmeController(FilmeContext context)
+        private IMapper _mapper;
+        public FilmeController(FilmeContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
        
         // palavra reservada do método Rest, que significa CRIAR alguma coisa
         [HttpPost] // estou dizendo que a inf enviada pelo Programa Postman vai postar a info no server da minha API
-        public IActionResult AdicionaFilme([FromBody] Filme filme) // recebe a inf enviada pelo postman pelo seu "Body"
+        public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto) // recebe a inf enviada pelo postman pelo seu "Body"
         {
+            Filme filme = _mapper.Map<Filme>(filmeDto);
             _context.Filmes.Add(filme);
             _context.SaveChanges();
             return CreatedAtAction(nameof(RecuperarFilmePorId), new { Id = filme.Id }, filme);
@@ -35,22 +40,39 @@ namespace FilmesAPI.Controllers
         [HttpGet("{id}")]
         public IActionResult RecuperarFilmePorId(int id)
         {
-            //foreach (Filme filme in filmes)
-            //{
-            //    if (filme.Id == id)
-            //    {
-            //        return filme;
-            //    }
-            //}
-            //return null;
 
            Filme filme = _context.Filmes.FirstOrDefault(filmes => filmes.Id == id);
             if (filme != null)
             {
-                return Ok(filme);
+                ReadFilmeDto filmeDto = _mapper.Map<ReadFilmeDto>(filme);
+                return Ok(filmeDto);
             }
             return NotFound();
         }
+        [HttpPut("{id}")]
+        public IActionResult AtualizaFilme(int id,[FromBody] UpdateFilmeDto FilmeAtualizaDto)
+        {
+            Filme filme = _context.Filmes.FirstOrDefault(filmes => filmes.Id == id);
+            if (filme == null)
+            {
+                return NotFound();
+            }
+            _mapper.Map(FilmeAtualizaDto,filme);
+            _context.SaveChanges();
+            return NoContent();
+        }
 
+        [HttpDelete("{id}")]
+        public IActionResult DeletaFilme(int id)
+        {
+            Filme filme = _context.Filmes.FirstOrDefault(filmes => filmes.Id == id);
+            if (filme == null)
+            {
+                return NotFound();
+            }
+            _context.Remove(filme);
+            _context.SaveChanges();
+            return NoContent();
+        }
     }
 }
