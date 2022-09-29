@@ -15,9 +15,9 @@ namespace FilmesAPI.Controllers
     [Route("[controller]")] // define q a rota para acessa a API será sempre 'nome' + 'Controller', ou seja, FilmeController
     public class FilmeController : ControllerBase
     {
-        private FilmeContext _context;
+        private AppDbContext _context;
         private IMapper _mapper;
-        public FilmeController(FilmeContext context, IMapper mapper)
+        public FilmeController(AppDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
