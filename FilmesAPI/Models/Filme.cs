@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace FilmesAPI.Models
@@ -20,6 +21,8 @@ namespace FilmesAPI.Models
         public string Genero { get; set; }
         [Range(25, 300, ErrorMessage = "A Duração do deve estar entre 25 minutos e 300 minutos")]
         public int Duracao { get; set; }
-        
+        public int ClassificacaoEtaria { get; set; }
+        [JsonIgnore]
+        public virtual List<Sessao> Sessoes { get; set; }
     }
 }
