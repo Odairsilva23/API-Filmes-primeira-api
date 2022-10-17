@@ -2,6 +2,7 @@
 using FilmesAPI.Data;
 using FilmesAPI.Dtos;
 using FilmesAPI.Models;
+using FilmesAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -15,53 +16,32 @@ namespace FilmesAPI.Controllers
     [Route("[controller]")] // define q a rota para acessa a API será sempre 'nome' + 'Controller', ou seja, FilmeController
     public class FilmeController : ControllerBase
     {
-        private AppDbContext _context;
-        private IMapper _mapper;
-        public FilmeController(AppDbContext context, IMapper mapper)
+        private FilmeService _filmeService;
+        public FilmeController(FilmeService service)
         {
-            _context = context;
-            _mapper = mapper;
+            _filmeService = service;
         }
        
         // palavra reservada do método Rest, que significa CRIAR alguma coisa
         [HttpPost] // estou dizendo que a inf enviada pelo Programa Postman vai postar a info no server da minha API
         public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto) // recebe a inf enviada pelo postman pelo seu "Body"
         {
-            Filme filme = _mapper.Map<Filme>(filmeDto);
-            _context.Filmes.Add(filme);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(RecuperarFilmePorId), new { Id = filme.Id }, filme);
+           ReadFilmeDto readFilmeDto = _filmeService.AdicionaFilme(filmeDto);
+            
+            return CreatedAtAction(nameof(RecuperarFilmePorId), new { Id = readFilmeDto.Id }, readFilmeDto);
         }
         [HttpGet]
         public IActionResult RecuperarFilmes([FromQuery] int? classificacaoetaria = null)
         {
-            List<Filme> filmes;
-            if (classificacaoetaria == null)
-            {
-                filmes = _context.Filmes.ToList();
-            }
-            else
-            {
-                filmes = _context.Filmes.Where(filme => filme.ClassificacaoEtaria <= classificacaoetaria).ToList();
-            }
-            if (filmes != null)
-            {
-                List<ReadFilmeDto> readDto = _mapper.Map<List<ReadFilmeDto>>(filmes);
-                return Ok(readDto);
-            }
-
+           List<ReadFilmeDto> readFilmeDtos = _filmeService.RecuperaFilmes(classificacaoetaria);
+            if (readFilmeDtos != null) return Ok(readFilmeDtos);
             return NotFound();
         }
         [HttpGet("{id}")]
         public IActionResult RecuperarFilmePorId(int id)
         {
-
-           Filme filme = _context.Filmes.FirstOrDefault(filmes => filmes.Id == id);
-            if (filme != null)
-            {
-                ReadFilmeDto filmeDto = _mapper.Map<ReadFilmeDto>(filme);
-                return Ok(filmeDto);
-            }
+            ReadFilmeDto readFilmeDto = _filmeService.RecuperarFilmePorId(id);
+            if (readFilmeDto != null) return Ok(id);
             return NotFound();
         }
         [HttpPut("{id}")]

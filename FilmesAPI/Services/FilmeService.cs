@@ -1,0 +1,61 @@
+﻿using AutoMapper;
+using FilmesAPI.Data;
+using FilmesAPI.Dtos;
+using FilmesAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace FilmesAPI.Services
+{
+    public class FilmeService
+    {
+        private AppDbContext _context;
+        private IMapper _mapper;
+
+        public FilmeService(AppDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+
+        public ReadFilmeDto AdicionaFilme(CreateFilmeDto filmeDto)
+        {
+            Filme filme = _mapper.Map<Filme>(filmeDto);
+            _context.Filmes.Add(filme);
+            _context.SaveChanges();
+            return _mapper.Map<ReadFilmeDto>(filme);
+        }
+
+        public List<ReadFilmeDto> RecuperaFilmes(int? classificacaoetaria)
+        {
+            List<Filme> filmes;
+            if (classificacaoetaria == null)
+            {
+                filmes = _context.Filmes.ToList();
+            }
+            else
+            {
+                filmes = _context.Filmes.Where(filme => filme.ClassificacaoEtaria <= classificacaoetaria).ToList();
+            }
+            if (filmes != null)
+            {
+                List<ReadFilmeDto> readDto = _mapper.Map<List<ReadFilmeDto>>(filmes);
+                return readDto;
+            }
+            return null;
+        }
+
+        public ReadFilmeDto RecuperarFilmePorId(int id)
+        {
+            Filme filme = _context.Filmes.FirstOrDefault(filmes => filmes.Id == id);
+            if (filme != null)
+            {
+                ReadFilmeDto filmeDto = _mapper.Map<ReadFilmeDto>(filme);
+                return filmeDto;
+            }
+            return null;
+        }
+    }
+}
