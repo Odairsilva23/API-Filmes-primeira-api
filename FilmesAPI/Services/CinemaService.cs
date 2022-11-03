@@ -64,7 +64,7 @@ namespace FilmesAPI.Services
             Cinema cinema = _context.Cinemas.FirstOrDefault(cinema => cinema.Id == id);
             if (cinema == null)
             {
-                return 
+                return Result.Fail("Cinema Não encontrado");
             }
             _mapper.Map(cinemaDto, cinema);
             _context.SaveChanges();
